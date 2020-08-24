@@ -111,7 +111,7 @@ if( file.exists(site_file)){
 
   # Standardize field names
   site_info  <- renameNWISColumns(site_info)
-  # Standarize capitalization of site name
+  # Standardize capitalization of site name
   # site_info$station_nm <- str_to_title( site_info$station_nm )
   site_info$station_nm <- "Pere Marquette River at Scottville, Michigan."
   save(site_info, file = site_file)
@@ -165,13 +165,13 @@ site_map <- get_map( location = c(lon = site_info$dec_long_va + 0.10, lat = site
                     zoom = 9, source = 'google', maptype = "terrain")
 # 
 # write_rds(site_map, path = "C:/Home/projects/spline_rating_curves/stage_discharge_rating/maps/site_map")
-write_rds(site_map, path = "C:/Home/USGS/stage_discharge_rating/maps/site_mapv2")
+write_rds(site_map, path = "C:/Home/USGS/adaptive_uncertainty/maps/site_map")
 
 # suppressMessages(map <- read_rds(path = "C:/Home/projects/spline_rating_curves/stage_discharge_rating/maps/site_map"))
-suppressMessages(map <- read_rds(path = "C:/Home/USGS/stage_discharge_rating/maps/site_map"))
+suppressMessages(map <- read_rds(path = "C:/Home/USGS/adaptive_uncertainty/maps/site_map"))
 
 # invisible(watershed    <- st_read("D:/ws_012/fhwa_flood_regions/gis/shapefiles/04122500.shp"))
-invisible(watershed    <- st_read("C:/Home//USGS/stage_discharge_rating/maps/04122500.shp"))
+invisible(watershed    <- st_read("C:/Home/USGS/stage_discharge_rating/maps/04122500.shp"))
 watershed_df <- data.frame( lon = st_coordinates(watershed)[,1],
                            lat = st_coordinates(watershed)[,2]) 
 ```
@@ -255,7 +255,8 @@ if( file.exists('flow_daily_pub.RData')){
   save(flow_daily_pub, file = 'flow_daily_pub.RData')
 }
 
-flow_hpdi <- HPDI( flow_daily_pub$Flow, prob = 0.95 )
+# flow_hpdi <- HPDI( flow_daily_pub$Flow, prob = 0.95 )
+flow_quant  <- quantile(flow_daily_pub$Flow, probs = c(0.025, 0.975)) 
 
 # Compute day of year
 # https://stackoverflow.com/questions/55525965/is-there-a-r-function-to-calculate-day-of-water-year
@@ -292,7 +293,7 @@ flow_daily_pub_cd$wy_day <- as.integer( flow_daily_pub_cd$wy_day )
 
 ***  
 
-A probability density curve can be used to theoretically describe the empirical frequency characteristics of daily mean flows.  In this analysis, the distribution of the natural logarithms of daily flows at Pere Marquette River were closely approximated by the asymmetrical, three-parameter gamma distribution (fig. 2), which is right skewed. Flows ranged from `r flow_hpdi[[1]]` and `r flow_hpdi[[2]]` ft^3^/s, 95-percent of the time.  The minimum and maximum daily flows during this period were `r min(flow_daily_pub$Flow)` and `r max(flow_daily_pub$Flow)`, respectively. The mean flow was 787 ft^3^/s. Thus, a Gamma distribution of the natural logarithms of flows was specified when modeling flows.     
+A probability density curve can be used to theoretically describe the empirical frequency characteristics of daily mean flows.  In this analysis, the distribution of the natural logarithms of daily flows at Pere Marquette River were closely approximated by the asymmetrical, three-parameter gamma distribution (fig. 2), which is right skewed. Flows ranged from `r flow_quant[[1]]` and `r flow_quant[[2]]` ft^3^/s, 95-percent of the time.  The minimum and maximum daily flows during this period were `r min(flow_daily_pub$Flow)` and `r max(flow_daily_pub$Flow)`, respectively. The mean flow was 787 ft^3^/s. Thus, a Gamma distribution of the natural logarithms of flows was specified when modeling flows.     
 
 ```{r prob_den_flow, warning = FALSE }
 # Estimate parameters for lgamma3
@@ -1447,8 +1448,8 @@ V0 <- gam18_rating$Vp * 1000
 
 # 1
 # Specify model
-if( file.exists('marss_fit_Q_ones_multiplier_R_one_multiplier.rds') ){
-  marss_fit_Q_ones_multiplier_R_one_multiplier <- read_rds('marss_fit_Q_ones_multiplier_R_one_multiplier.rds')
+if( file.exists('rds/marss_fit_Q_ones_multiplier_R_one_multiplier.rds') ){
+  marss_fit_Q_ones_multiplier_R_one_multiplier <- read_rds('rds/marss_fit_Q_ones_multiplier_R_one_multiplier.rds')
 } else{
   Q = 'diagonal and equal'  # 'ones_multiplier'
   R = 'diagonal and equal'  # 'one_multiplier'
@@ -1466,8 +1467,8 @@ if( file.exists('marss_fit_Q_ones_multiplier_R_one_multiplier.rds') ){
 ```{r marss_fit_Q_unequal_scalars_R_one_multiplier}
 # 2
 # Specify model
-if( file.exists('marss_fit_Q_unequal_scalars_R_one_multiplier.rds') ){
-  marss_fit_Q_unequal_scalars_R_one_multiplier <- read_rds('marss_fit_Q_unequal_scalars_R_one_multiplier.rds')
+if( file.exists('rds/marss_fit_Q_unequal_scalars_R_one_multiplier.rds') ){
+  marss_fit_Q_unequal_scalars_R_one_multiplier <- read_rds('rds/marss_fit_Q_unequal_scalars_R_one_multiplier.rds')
 } else{
   Q = 'diagonal and unequal'  # 'unequal_scalars'
   R = 'diagonal and equal'    # 'one_multiplier'
@@ -1485,8 +1486,8 @@ if( file.exists('marss_fit_Q_unequal_scalars_R_one_multiplier.rds') ){
 # 3
 
 # Specify model
-if( file.exists('marss_fit_Q_ones_multiplier_R_mean_qualifier.rds') ){
-  marss_fit_Q_ones_multiplier_R_mean_qualifier <- read_rds('marss_fit_Q_ones_multiplier_R_mean_qualifier.rds')
+if( file.exists('rds/marss_fit_Q_ones_multiplier_R_mean_qualifier.rds') ){
+  marss_fit_Q_ones_multiplier_R_mean_qualifier <- read_rds('rds/marss_fit_Q_ones_multiplier_R_mean_qualifier.rds')
 } else{
   Q <- 'diagonal and equal'                                                    # 'ones_multiplier'
   # R is specified by qualifiers of discrete flow measurement              
@@ -1506,8 +1507,8 @@ if( file.exists('marss_fit_Q_ones_multiplier_R_mean_qualifier.rds') ){
 # 4
 
 # Specify model
-if( file.exists('marss_fit_Q_ones_multiplier_R_mean_qualifier.rds') ){
-  marss_fit_Q_unconstrained_R_mean_qualifier <- read_rds('marss_fit_Q_unconstrained_R_mean_qualifier.rds')
+if( file.exists('rds/marss_fit_Q_ones_multiplier_R_mean_qualifier.rds') ){
+  marss_fit_Q_unconstrained_R_mean_qualifier <- read_rds('rds/marss_fit_Q_unconstrained_R_mean_qualifier.rds')
 } else{
   Q <- 'unconstrained'                                                    # 'ones_multiplier'
   # R is specified by qualifiers of discrete flow measurement              
@@ -1527,8 +1528,8 @@ if( file.exists('marss_fit_Q_ones_multiplier_R_mean_qualifier.rds') ){
 # 5
 
 # Specify model
-if( file.exists('marss_fit_Q_equalvarcov_R_mean_qualifier.rds') ){
-  marss_fit_Q_equalvarcov_R_mean_qualifier <- read_rds('marss_fit_Q_equalvarcov_R_mean_qualifier.rds')
+if( file.exists('rds/marss_fit_Q_equalvarcov_R_mean_qualifier.rds') ){
+  marss_fit_Q_equalvarcov_R_mean_qualifier <- read_rds('rds/marss_fit_Q_equalvarcov_R_mean_qualifier.rds')
 } else{
   Q <- 'equalvarcov'                                                    # 'ones_multiplier'
   # R is specified by qualifiers of discrete flow measurement              
@@ -1553,8 +1554,8 @@ if( file.exists('marss_fit_Q_equalvarcov_R_mean_qualifier.rds') ){
 #  These standardized variance terms average 1 and form the diagonal of Q
 gam18_diag_std <- diag(gam18_rating$Vp)/mean(diag(gam18_rating$Vp))
 
-if( file.exists( 'marss_fit_Q_covar_multiplier_R_one_multiplier.rds' )){
-  marss_fit_Q_covar_multiplier_R_one_multiplier <- read_rds( 'marss_fit_Q_covar_multiplier_R_one_multiplier.rds' )
+if( file.exists( 'rds/marss_fit_Q_covar_multiplier_R_one_multiplier.rds' )){
+  marss_fit_Q_covar_multiplier_R_one_multiplier <- read_rds( 'rds/marss_fit_Q_covar_multiplier_R_one_multiplier.rds' )
 } else {
   # State variance matrix is based on the gam18_measPair$Vp
   Q <- matrix(list('0.1166336*q',0,0,0,0,                 # 'covar_multiplier'
@@ -1586,8 +1587,8 @@ if( file.exists( 'marss_fit_Q_covar_multiplier_R_one_multiplier.rds' )){
 #  These standardized variance terms average 1 and form the diagonal of Q
 # gam18_diag_std <- diag(gam18_rating$Vp)/mean(diag(gam18_rating$Vp))
 
-if( file.exists( 'marss_fit_Q_covar_multiplier_R_mean_qualifier.rds' )){
-  marss_fit_Q_covar_multiplier_R_mean_qualifier <- read_rds( 'marss_fit_Q_covar_multiplier_R_mean_qualifier.rds' )
+if( file.exists( 'rds/marss_fit_Q_covar_multiplier_R_mean_qualifier.rds' )){
+  marss_fit_Q_covar_multiplier_R_mean_qualifier <- read_rds( 'rds/marss_fit_Q_covar_multiplier_R_mean_qualifier.rds' )
 } else {
   # State variance matrix is based on the gam18_measPair$Vp
   Q <- matrix(list('0.1166336*q',0,0,0,0,                                     # 'covar_multiplier'
@@ -1618,8 +1619,8 @@ if( file.exists( 'marss_fit_Q_covar_multiplier_R_mean_qualifier.rds' )){
 
 # 8
 
-if ( file.exists( 'marss_fit_Q_ones_multiplier_R_series_qualifier.rds' )){
-  marss_fit_Q_ones_multiplier_R_series_qualifier <- read_rds( 'marss_fit_Q_ones_multiplier_R_series_qualifier.rds' )
+if ( file.exists( 'rds/marss_fit_Q_ones_multiplier_R_series_qualifier.rds' )){
+  marss_fit_Q_ones_multiplier_R_series_qualifier <- read_rds( 'rds/marss_fit_Q_ones_multiplier_R_series_qualifier.rds' )
 } else {
   Q = 'diagonal and equal'                                                      # 'ones_multiplier'
   
@@ -1651,8 +1652,8 @@ if ( file.exists( 'marss_fit_Q_ones_multiplier_R_series_qualifier.rds' )){
 # Standardize the diagonal of gam18_rating for estimation
 # gam18_diag_std <- diag(gam18_rating$Vp)/mean(diag(gam18_rating$Vp))
 
-if( file.exists( 'marss_fit_Q_covar_multiplier_R_series_qualifier.rds' )){
-  marss_fit_Q_covar_multiplier_R_series_qualifier <- read_rds( 'marss_fit_Q_covar_multiplier_R_series_qualifier.rds' )
+if( file.exists( 'rds/marss_fit_Q_covar_multiplier_R_series_qualifier.rds' )){
+  marss_fit_Q_covar_multiplier_R_series_qualifier <- read_rds( 'rds/marss_fit_Q_covar_multiplier_R_series_qualifier.rds' )
 } else {
   # State variance matrix is based on the gam18_measPair$Vp
   Q <- matrix(list('0.1166336*q',0,0,0,0,                                  # 'covar_multiplier'
@@ -1684,8 +1685,8 @@ if( file.exists( 'marss_fit_Q_covar_multiplier_R_series_qualifier.rds' )){
 
 # 10
 
-if ( file.exists( 'marss_fit_Q_diag_unequal_R_series_specified_var.rds' )){
-  marss_fit_Q_diag_unequal_R_series_specified_var <- read_rds( 'marss_fit_Q_diag_unequal_R_series_specified_var.rds' )
+if ( file.exists( 'rds/marss_fit_Q_diag_unequal_R_series_specified_var.rds' )){
+  marss_fit_Q_diag_unequal_R_series_specified_var <- read_rds( 'rds/marss_fit_Q_diag_unequal_R_series_specified_var.rds' )
 } else {
   Q = 'diagonal and unequal'  
   
@@ -1726,15 +1727,15 @@ The model with the smallest AIC statistic is preferred from a statistical perspe
 
 ```{r state_space_compare}
 
-Model_01 <- read_rds('marss_fit_Q_ones_multiplier_R_one_multiplier.rds')
-Model_02 <- read_rds('marss_fit_Q_unequal_scalars_R_one_multiplier.rds')
-Model_03 <- read_rds('marss_fit_Q_ones_multiplier_R_mean_qualifier.rds')
-Model_04 <- read_rds('marss_fit_Q_unconstrained_R_mean_qualifier.rds')
-Model_05 <- read_rds('marss_fit_Q_equalvarcov_R_mean_qualifier.rds')
-Model_06 <- read_rds('marss_fit_Q_covar_multiplier_R_one_multiplier.rds')
-Model_07 <- read_rds('marss_fit_Q_covar_multiplier_R_mean_qualifier.rds')
-Model_08 <- read_rds('marss_fit_Q_ones_multiplier_R_series_qualifier.rds')
-Model_09 <- read_rds('marss_fit_Q_covar_multiplier_R_series_qualifier.rds')
+Model_01 <- read_rds('rds/marss_fit_Q_ones_multiplier_R_one_multiplier.rds')
+Model_02 <- read_rds('rds/marss_fit_Q_unequal_scalars_R_one_multiplier.rds')
+Model_03 <- read_rds('rds/marss_fit_Q_ones_multiplier_R_mean_qualifier.rds')
+Model_04 <- read_rds('rds/marss_fit_Q_unconstrained_R_mean_qualifier.rds')
+Model_05 <- read_rds('rds/marss_fit_Q_equalvarcov_R_mean_qualifier.rds')
+Model_06 <- read_rds('rds/marss_fit_Q_covar_multiplier_R_one_multiplier.rds')
+Model_07 <- read_rds('rds/marss_fit_Q_covar_multiplier_R_mean_qualifier.rds')
+Model_08 <- read_rds('rds/marss_fit_Q_ones_multiplier_R_series_qualifier.rds')
+Model_09 <- read_rds('rds/marss_fit_Q_covar_multiplier_R_series_qualifier.rds')
 
 # Set up data.frame to compare models,
 marss_compare <- data.frame(
@@ -2297,12 +2298,12 @@ summary(gam21_measPair)
 
 ```{r Model_05, echo = FALSE}
 
-if ( file.exists( 'marss_fit_Q_equalvarcov_R_mean_qualifierCI.rds' )){
-  marss_fit_Q_equalvarcov_R_mean_qualifierCI <- read_rds( 'marss_fit_Q_equalvarcov_R_mean_qualifierCI.rds' )
+if ( file.exists( 'rds/marss_fit_Q_equalvarcov_R_mean_qualifierCI.rds' )){
+  marss_fit_Q_equalvarcov_R_mean_qualifierCI <- read_rds( 'rds/marss_fit_Q_equalvarcov_R_mean_qualifierCI.rds' )
 } else {
  marss_fit_Q_equalvarcov_R_mean_qualifierCI_parm  <- MARSSparamCIs( marss_fit_Q_equalvarcov_R_mean_qualifier)
   
-  write_rds(marss_fit_Q_equalvarcov_R_mean_qualifierCI, path = 'marss_fit_Q_equalvarcov_R_mean_qualifierCI.rds')
+  write_rds(marss_fit_Q_equalvarcov_R_mean_qualifierCI, path = 'rds/marss_fit_Q_equalvarcov_R_mean_qualifierCI.rds')
 }
 print( marss_fit_Q_equalvarcov_R_mean_qualifierCI )
 
@@ -2313,12 +2314,12 @@ print( marss_fit_Q_equalvarcov_R_mean_qualifierCI )
 
 ```{r Model_03, echo = FALSE}
 
-if ( file.exists( 'marss_fit_Q_ones_multiplier_R_mean_qualifierCI.rds' )){
-  marss_fit_Q_ones_multiplier_R_mean_qualifierCI <- read_rds( 'marss_fit_Q_ones_multiplier_R_mean_qualifierCI.rds' )
+if ( file.exists( 'rds/marss_fit_Q_ones_multiplier_R_mean_qualifierCI.rds' )){
+  marss_fit_Q_ones_multiplier_R_mean_qualifierCI <- read_rds( 'rds/marss_fit_Q_ones_multiplier_R_mean_qualifierCI.rds' )
 } else {
  marss_fit_Q_ones_multiplier_R_mean_qualifierCI  <- MARSSparamCIs( marss_fit_Q_ones_multiplier_R_mean_qualifier)
   
-  write_rds(marss_fit_Q_ones_multiplier_R_mean_qualifierCI, path = 'marss_fit_Q_ones_multiplier_R_mean_qualifierCI.rds')
+  write_rds(marss_fit_Q_ones_multiplier_R_mean_qualifierCI, path = 'rds/marss_fit_Q_ones_multiplier_R_mean_qualifierCI.rds')
 }
 print( marss_fit_Q_ones_multiplier_R_mean_qualifierCI )
 
@@ -2330,12 +2331,12 @@ print( marss_fit_Q_ones_multiplier_R_mean_qualifierCI )
 
 ```{r Model_07, echo = FALSE}
 
-if ( file.exists( 'marss_fit_Q_covar_multiplier_R_mean_qualifierCI.rds' )){
-  marss_fit_Q_covar_multiplier_R_mean_qualifierCI <- read_rds( 'marss_fit_Q_covar_multiplier_R_mean_qualifierCI.rds' )
+if ( file.exists( 'rds/marss_fit_Q_covar_multiplier_R_mean_qualifierCI.rds' )){
+  marss_fit_Q_covar_multiplier_R_mean_qualifierCI <- read_rds( 'rds/marss_fit_Q_covar_multiplier_R_mean_qualifierCI.rds' )
 } else {
  marss_fit_Q_covar_multiplier_R_mean_qualifierCI  <- MARSSparamCIs( marss_fit_Q_covar_multiplier_R_mean_qualifier)
   
-  write_rds(marss_fit_Q_covar_multiplier_R_mean_qualifierCI, path = 'marss_fit_Q_covar_multiplier_R_mean_qualifierCI.rds')
+  write_rds(marss_fit_Q_covar_multiplier_R_mean_qualifierCI, path = 'rds/marss_fit_Q_covar_multiplier_R_mean_qualifierCI.rds')
 }
 print( marss_fit_Q_covar_multiplier_R_mean_qualifierCI )
 
@@ -2345,12 +2346,12 @@ print( marss_fit_Q_covar_multiplier_R_mean_qualifierCI )
 
 ```{r Model_04, echo = FALSE}
 
-if ( file.exists( 'marss_fit_Q_unconstrained_R_mean_qualifierCI.rds' )){
-  marss_fit_Q_unconstrained_R_mean_qualifierCI <- read_rds( 'marss_fit_Q_unconstrained_R_mean_qualifierCI.rds' )
+if ( file.exists( 'rds/marss_fit_Q_unconstrained_R_mean_qualifierCI.rds' )){
+  marss_fit_Q_unconstrained_R_mean_qualifierCI <- read_rds( 'rds/marss_fit_Q_unconstrained_R_mean_qualifierCI.rds' )
 } else {
  marss_fit_Q_unconstrained_R_mean_qualifierCI  <- MARSSparamCIs( marss_fit_Q_unconstrained_R_mean_qualifier)
   
-  write_rds(marss_fit_Q_unconstrained_R_mean_qualifierCI, path = 'marss_fit_Q_unconstrained_R_mean_qualifierCI.rds')
+  write_rds(marss_fit_Q_unconstrained_R_mean_qualifierCI, path = 'rds/marss_fit_Q_unconstrained_R_mean_qualifierCI.rds')
 }
 print( marss_fit_Q_unconstrained_R_mean_qualifierCI )
 
@@ -2360,12 +2361,12 @@ print( marss_fit_Q_unconstrained_R_mean_qualifierCI )
 
 ```{r Model_06, echo = FALSE}
 
-if ( file.exists( 'marss_fit_Q_covar_multiplier_R_one_multiplierCI.rds' )){
-  marss_fit_Q_covar_multiplier_R_one_multiplierCI <- read_rds( 'marss_fit_Q_covar_multiplier_R_one_multiplierCI.rds' )
+if ( file.exists( 'rds/marss_fit_Q_covar_multiplier_R_one_multiplierCI.rds' )){
+  marss_fit_Q_covar_multiplier_R_one_multiplierCI <- read_rds( 'rds/marss_fit_Q_covar_multiplier_R_one_multiplierCI.rds' )
 } else {
  marss_fit_Q_covar_multiplier_R_one_multiplierCI  <- MARSSparamCIs( marss_fit_Q_covar_multiplier_R_one_multiplier)
   
-  write_rds(marss_fit_Q_covar_multiplier_R_one_multiplierCI, path = 'marss_fit_Q_covar_multiplier_R_one_multiplierCI.rds')
+  write_rds(marss_fit_Q_covar_multiplier_R_one_multiplierCI, path = 'rds/marss_fit_Q_covar_multiplier_R_one_multiplierCI.rds')
 }
 print( marss_fit_Q_covar_multiplier_R_one_multiplierCI )
 
@@ -2375,13 +2376,13 @@ print( marss_fit_Q_covar_multiplier_R_one_multiplierCI )
 ** Summary output of MARSS Model with Q 'diagonal and unequal' and R 'diagonal and equal' **
 ```{r Model_02, echo = FALSE}
 
-if ( file.exists( 'marss_fit_Q_unequal_scalars_R_one_multiplierCI.rds' )){
-  marss_fit_Q_unequal_scalars_R_one_multiplierCI <- read_rds( 'marss_fit_Q_unequal_scalars_R_one_multiplierCI.rds' )
+if ( file.exists( 'rds/marss_fit_Q_unequal_scalars_R_one_multiplierCI.rds' )){
+  marss_fit_Q_unequal_scalars_R_one_multiplierCI <- read_rds( 'rds/marss_fit_Q_unequal_scalars_R_one_multiplierCI.rds' )
 } else {
  marss_fit_Q_unequal_scalars_R_one_multiplierCIboot2  <- MARSSparamCIs( marss_fit_Q_unequal_scalars_R_one_multiplier,
                                                                    method = 'parametric', nboot = 1000)
   
-  write_rds(marss_fit_Q_unequal_scalars_R_one_multiplierCIboot2, path = 'marss_fit_Q_unequal_scalars_R_one_multiplierCIboot2.rds')
+  write_rds(marss_fit_Q_unequal_scalars_R_one_multiplierCIboot2, path = 'rds/marss_fit_Q_unequal_scalars_R_one_multiplierCIboot2.rds')
 }
 print( marss_fit_Q_unequal_scalars_R_one_multiplierCI )
 
@@ -2391,12 +2392,12 @@ print( marss_fit_Q_unequal_scalars_R_one_multiplierCI )
 
 ```{r Model_01, echo = FALSE}
 
-if ( file.exists( 'marss_fit_Q_ones_multiplier_R_one_multiplierCI.rds' )){
-  marss_fit_Q_ones_multiplier_R_one_multiplierCI <- read_rds( 'marss_fit_Q_ones_multiplier_R_one_multiplierCI.rds' )
+if ( file.exists( 'rds/marss_fit_Q_ones_multiplier_R_one_multiplierCI.rds' )){
+  marss_fit_Q_ones_multiplier_R_one_multiplierCI <- read_rds( 'rds/marss_fit_Q_ones_multiplier_R_one_multiplierCI.rds' )
 } else {
  marss_fit_Q_ones_multiplier_R_one_multiplierCI  <- MARSSparamCIs( marss_fit_Q_ones_multiplier_R_one_multiplier)
   
-  write_rds(marss_fit_Q_ones_multiplier_R_one_multiplierCI, path = 'marss_fit_Q_ones_multiplier_R_one_multiplierCI.rds')
+  write_rds(marss_fit_Q_ones_multiplier_R_one_multiplierCI, path = 'rds/marss_fit_Q_ones_multiplier_R_one_multiplierCI.rds')
 }
 print( marss_fit_Q_ones_multiplier_R_one_multiplierCI )
 
@@ -2407,12 +2408,12 @@ print( marss_fit_Q_ones_multiplier_R_one_multiplierCI )
 
 ```{r Model_09, echo = FALSE}
 
-if ( file.exists( 'marss_fit_Q_covar_multiplier_R_series_qualifierCI.rds' )){
-  marss_fit_Q_covar_multiplier_R_series_qualifierCI <- read_rds( 'marss_fit_Q_covar_multiplier_R_series_qualifierCI.rds' )
+if ( file.exists( 'rds/marss_fit_Q_covar_multiplier_R_series_qualifierCI.rds' )){
+  marss_fit_Q_covar_multiplier_R_series_qualifierCI <- read_rds( 'rds/marss_fit_Q_covar_multiplier_R_series_qualifierCI.rds' )
 } else {
  marss_fit_Q_covar_multiplier_R_series_qualifierCI  <- MARSSparamCIs( marss_fit_Q_covar_multiplier_R_series_qualifier)
   
-  write_rds(marss_fit_Q_covar_multiplier_R_series_qualifierCI, path = 'marss_fit_Q_covar_multiplier_R_series_qualifierCI.rds')
+  write_rds(marss_fit_Q_covar_multiplier_R_series_qualifierCI, path = 'rds/marss_fit_Q_covar_multiplier_R_series_qualifierCI.rds')
 }
 print( marss_fit_Q_covar_multiplier_R_series_qualifierCI )
 
@@ -2423,12 +2424,12 @@ print( marss_fit_Q_covar_multiplier_R_series_qualifierCI )
 
 ```{r Model_08, echo = FALSE}
 
-if ( file.exists( 'marss_fit_Q_ones_multiplier_R_series_qualifierCI.rds' )){
-  marss_fit_Q_ones_multiplier_R_series_qualifierCI <- read_rds( 'marss_fit_Q_ones_multiplier_R_series_qualifierCI.rds' )
+if ( file.exists( 'rds/marss_fit_Q_ones_multiplier_R_series_qualifierCI.rds' )){
+  marss_fit_Q_ones_multiplier_R_series_qualifierCI <- read_rds( 'rds/marss_fit_Q_ones_multiplier_R_series_qualifierCI.rds' )
 } else {
  marss_fit_Q_ones_multiplier_R_series_qualifierCI  <- MARSSparamCIs( marss_fit_Q_ones_multiplier_R_series_qualifier)
   
-  write_rds(marss_fit_Q_ones_multiplier_R_series_qualifierCI, path = 'marss_fit_Q_ones_multiplier_R_series_qualifierCI.rds')
+  write_rds(marss_fit_Q_ones_multiplier_R_series_qualifierCI, path = 'rds/marss_fit_Q_ones_multiplier_R_series_qualifierCI.rds')
 }
 print( marss_fit_Q_ones_multiplier_R_series_qualifierCI )
 
@@ -2457,7 +2458,7 @@ Given that the ML CI estimate of diagonal and equal Q elements for the selected 
 # This is the more interesting form for the marss_fit model
 # marssBoot <- MARSSboot(marss_fit, nboot = 1000, sim = 'parametric', param.gen = 'MLE')
 
-boot1 <- read_rds(path = "C:/Home/projects/spline_rating_curves/stage_discharge_rating/boot1.rds")
+boot1 <- read_rds(path = "rds/boot1.rds")
 
 boot1.lowCI_Q <- boot1$par.lowCI$Q
 boot1.upCI_Q  <- boot1$par.upCI$Q
@@ -2473,7 +2474,7 @@ ml.lowCI_R <- marss_fit_Q_unequal_scalars_R_one_multiplierCI$par.lowCI$R
 ml.upCI_R  <- marss_fit_Q_unequal_scalars_R_one_multiplierCI$par.upCI$R
 
 
-boot2 <- read_rds(path = "C:/Home/projects/spline_rating_curves/stage_discharge_rating/boot2.rds")
+boot2 <- read_rds(path = "rds/boot2.rds")
 
 boot2.lowCI_Q <- boot2$par.lowCI$Q
 boot2.upCI_Q  <- boot2$par.upCI$Q
