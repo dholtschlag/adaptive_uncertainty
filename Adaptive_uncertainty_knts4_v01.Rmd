@@ -150,21 +150,21 @@ Persistent changes in stage-flow relation at 04122500 Pere Marquette River at Sc
 
 # this sets your google map for this session
 # Read google key from file
-google_key <- read_file('maps/google_key.txt')
+# google_key <- read_file('maps/google_key.txt')
 
 # Register the key and delete it following registry
-register_google(key = google_key)
-rm('google_key')
+# register_google(key = google_key)
+# rm('google_key')
 
 # check if key is saved
-has_google_key()
+# has_google_key()
 
 # Set up bounding box for map
-site_map <- get_map( location = c(lon = site_info$dec_long_va + 0.10, lat = site_info$dec_lat_va),
-                    zoom = 9, source = 'google', maptype = "terrain")
+# site_map <- get_map( location = c(lon = site_info$dec_long_va + 0.10, lat = site_info$dec_lat_va),
+#                     zoom = 9, source = 'google', maptype = "terrain")
 # 
 # write_rds(site_map, path = "C:/Home/projects/spline_rating_curves/stage_discharge_rating/maps/site_map")
-write_rds(site_map, path = "C:/Home/USGS/adaptive_uncertainty/maps/site_map")
+# write_rds(site_map, path = "C:/Home/USGS/adaptive_uncertainty/maps/site_map")
 
 # suppressMessages(map <- read_rds(path = "C:/Home/projects/spline_rating_curves/stage_discharge_rating/maps/site_map"))
 suppressMessages(map <- read_rds(path = "C:/Home/USGS/adaptive_uncertainty/maps/site_map"))
@@ -1413,7 +1413,7 @@ per_NA <- format( length(which( is.na(Yt))) / length(Yt) * 100, digit = 3 )
 # print(paste('The measurement vector is',   per_NA,'percent NA indicators.'))
 
 ############ MODIFY AS NEEDED ###########################
-# Substitude discrete stage values for mean daily stage on days of discrete measurement
+# Substitute discrete stage values for mean daily stage on days of discrete measurement
 df_stage_flow_allDays$stage_daily_mean[ ndx_ian ] <- df_stage_flow_allDays$stage_discrete_mea[ ndx_ian ]
 
 Zt <- t(predict( gam18_rating, newdata = data.frame( stage = df_stage_flow_allDays$stage_daily_mean),
@@ -1432,7 +1432,7 @@ A  <- 'zero'
 U  <- 'zero'
 
 # Initial state vector from GA model
-X0 <- as.matrix( as.numeric(coefficients(gam18_rating)), 5, 1)
+X0 <- as.matrix( as.numeric(coefficients(gam18_rating)), knts, 1)
 
 # Initial covariance of the state model
 V0 <- gam18_rating$Vp * 1000
@@ -1447,17 +1447,17 @@ V0 <- gam18_rating$Vp * 1000
 
 # 1
 # Specify model
-if( file.exists('rds/marss_fit_Q_ones_multiplier_R_one_multiplier.rds') ){
-  marss_fit_Q_ones_multiplier_R_one_multiplier <- read_rds('rds/marss_fit_Q_ones_multiplier_R_one_multiplier.rds')
+if( file.exists('rds4/marss_fit_Q_ones_multiplier_R_one_multiplier.rds') ){
+  marss_fit_Q_ones_multiplier_R_one_multiplier <- read_rds('rds4/marss_fit_Q_ones_multiplier_R_one_multiplier.rds')
 } else{
   Q = 'diagonal and equal'  # 'ones_multiplier'
   R = 'diagonal and equal'  # 'one_multiplier'
   model.gen=list(Z=Zt,A=A,R=R,U=U,Q=Q,x0=X0,V0=V0,tinitx=0)
-  # Refit model: trace = 1 provides parameter etimates with each iteration with the corresponding log-likelihood
+  # Refit model: trace = 1 provides parameter estimates with each iteration with the corresponding log-likelihood
   marss_fit_Q_ones_multiplier_R_one_multiplier  <- MARSS(Yt, model = model.gen, control = list(maxit =  5000, trace = 1), 
-                                                         method = 'BFGS', 
-                                                         inits = coef(marss_fit_Q_ones_multiplier_R_one_multiplier) ) 
-  write_rds(marss_fit_Q_ones_multiplier_R_one_multiplier, path = 'marss_fit_Q_ones_multiplier_R_one_multiplier.rds')
+                                                         method = 'BFGS') 
+  #                                                       inits = coef(marss_fit_Q_ones_multiplier_R_one_multiplier) ) 
+  write_rds(marss_fit_Q_ones_multiplier_R_one_multiplier, path = 'rds4/marss_fit_Q_ones_multiplier_R_one_multiplier.rds')
 }
 
 ```
@@ -1467,15 +1467,15 @@ if( file.exists('rds/marss_fit_Q_ones_multiplier_R_one_multiplier.rds') ){
 # 2
 # Specify model
 if( file.exists('rds/marss_fit_Q_unequal_scalars_R_one_multiplier.rds') ){
-  marss_fit_Q_unequal_scalars_R_one_multiplier <- read_rds('rds/marss_fit_Q_unequal_scalars_R_one_multiplier.rds')
+  marss_fit_Q_unequal_scalars_R_one_multiplier <- read_rds('rds4/marss_fit_Q_unequal_scalars_R_one_multiplier.rds')
 } else{
   Q = 'diagonal and unequal'  # 'unequal_scalars'
   R = 'diagonal and equal'    # 'one_multiplier'
   model.gen=list(Z=Zt,A=A,R=R,U=U,Q=Q,x0=X0,V0=V0,tinitx=0)
-  # Refit model: trace = 1 provides parameter etimates with each iteration with the corresponding log-likelihood
+  # Refit model: trace = 1 provides parameter estimates with each iteration with the corresponding log-likelihood
   marss_fit_Q_unequal_scalars_R_one_multiplier  <- MARSS(Yt, model = model.gen, control = list(maxit =  5000, trace = 1), 
-                 method = 'BFGS', inits = coef( marss_fit_Q_unequal_scalars_R_one_multiplier ))
-  write_rds(marss_fit_Q_unequal_scalars_R_one_multiplier, path = 'marss_fit_Q_unequal_scalars_R_one_multiplier.rds')
+                 method = 'BFGS') #, inits = coef( marss_fit_Q_unequal_scalars_R_one_multiplier ))
+  write_rds(marss_fit_Q_unequal_scalars_R_one_multiplier, path = 'rds4/marss_fit_Q_unequal_scalars_R_one_multiplier.rds')
 }
 
 ```
@@ -1485,8 +1485,8 @@ if( file.exists('rds/marss_fit_Q_unequal_scalars_R_one_multiplier.rds') ){
 # 3
 
 # Specify model
-if( file.exists('rds/marss_fit_Q_ones_multiplier_R_mean_qualifier.rds') ){
-  marss_fit_Q_ones_multiplier_R_mean_qualifier <- read_rds('rds/marss_fit_Q_ones_multiplier_R_mean_qualifier.rds')
+if( file.exists('rds4/marss_fit_Q_ones_multiplier_R_mean_qualifier.rds') ){
+  marss_fit_Q_ones_multiplier_R_mean_qualifier <- read_rds('rds4/marss_fit_Q_ones_multiplier_R_mean_qualifier.rds')
 } else{
   Q <- 'diagonal and equal'                                                    # 'ones_multiplier'
   # R is specified by qualifiers of discrete flow measurement              
@@ -1494,8 +1494,8 @@ if( file.exists('rds/marss_fit_Q_ones_multiplier_R_mean_qualifier.rds') ){
   model.gen=list(Z=Zt,A=A,R=R,U=U,Q=Q,x0=X0,V0=V0,tinitx=0)
   # Refit model: trace = 1 provides parameter etimates with each iteration with the corresponding log-likelihood
   marss_fit_Q_ones_multiplier_R_mean_qualifier  <- MARSS(Yt, model = model.gen, control = list(maxit =  1000, trace = 1), 
-                 method = 'BFGS', inits = coef( marss_fit_Q_ones_multiplier_R_mean_qualifier ))
-  write_rds(marss_fit_Q_ones_multiplier_R_mean_qualifier, path = 'marss_fit_Q_ones_multiplier_R_mean_qualifier.rds')
+                 method = 'BFGS') #, inits = coef( marss_fit_Q_ones_multiplier_R_mean_qualifier ))
+  write_rds(marss_fit_Q_ones_multiplier_R_mean_qualifier, path = 'rds4/marss_fit_Q_ones_multiplier_R_mean_qualifier.rds')
 }
 
 
@@ -1506,17 +1506,17 @@ if( file.exists('rds/marss_fit_Q_ones_multiplier_R_mean_qualifier.rds') ){
 # 4
 
 # Specify model
-if( file.exists('rds/marss_fit_Q_ones_multiplier_R_mean_qualifier.rds') ){
-  marss_fit_Q_unconstrained_R_mean_qualifier <- read_rds('rds/marss_fit_Q_unconstrained_R_mean_qualifier.rds')
+if( file.exists('rds4/marss_fit_Q_ones_multiplier_R_mean_qualifier.rds') ){
+  marss_fit_Q_unconstrained_R_mean_qualifier <- read_rds('rds4/marss_fit_Q_unconstrained_R_mean_qualifier.rds')
 } else{
   Q <- 'unconstrained'                                                    # 'ones_multiplier'
   # R is specified by qualifiers of discrete flow measurement              
   R  <- matrix(mean( (df_stage_flow_allDays$se_pct[ndx_ian_Yt]/100)^2),1,1)    # 'mean_qualifier'
   model.gen=list(Z=Zt,A='zero',U='zero',R=R,Q=Q,x0=X0,V0=V0,tinitx=0)
-  # Refit model: trace = 1 provides parameter etimates with each iteration with the corresponding log-likelihood
+  # Refit model: trace = 1 provides parameter estimates with each iteration with the corresponding log-likelihood
   marss_fit_Q_unconstrained_R_mean_qualifier  <- MARSS(Yt, model = model.gen, control = list(maxit =  1000, trace = 1), 
-                 method = 'BFGS', inits = coef( marss_fit_Q_unconstrained_R_mean_qualifier ))
-  write_rds(marss_fit_Q_unconstrained_R_mean_qualifier, path = 'marss_fit_Q_unconstrained_R_mean_qualifier.rds')
+                 method = 'BFGS') # , inits = coef( marss_fit_Q_unconstrained_R_mean_qualifier ))
+  write_rds(marss_fit_Q_unconstrained_R_mean_qualifier, path = 'rds4/marss_fit_Q_unconstrained_R_mean_qualifier.rds')
 }
 
 
