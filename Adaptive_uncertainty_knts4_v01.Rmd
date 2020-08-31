@@ -1527,8 +1527,8 @@ if( file.exists('rds4/marss_fit_Q_ones_multiplier_R_mean_qualifier.rds') ){
 # 5
 
 # Specify model
-if( file.exists('rds/marss_fit_Q_equalvarcov_R_mean_qualifier.rds') ){
-  marss_fit_Q_equalvarcov_R_mean_qualifier <- read_rds('rds/marss_fit_Q_equalvarcov_R_mean_qualifier.rds')
+if( file.exists('rds4/marss_fit_Q_equalvarcov_R_mean_qualifier.rds') ){
+  marss_fit_Q_equalvarcov_R_mean_qualifier <- read_rds('rds4/marss_fit_Q_equalvarcov_R_mean_qualifier.rds')
 } else{
   Q <- 'equalvarcov'                                                    # 'ones_multiplier'
   # R is specified by qualifiers of discrete flow measurement              
@@ -1545,7 +1545,7 @@ if( file.exists('rds/marss_fit_Q_equalvarcov_R_mean_qualifier.rds') ){
 ```
 
 
-```{r marss_fit_Q_covar_multiplier_R_one_multiplier}
+```{r marss_fit_Q_covar_multiplier_R_one_multiplier, eval = FALSE}
 
 # 6
 
@@ -1553,8 +1553,8 @@ if( file.exists('rds/marss_fit_Q_equalvarcov_R_mean_qualifier.rds') ){
 #  These standardized variance terms average 1 and form the diagonal of Q
 gam18_diag_std <- diag(gam18_rating$Vp)/mean(diag(gam18_rating$Vp))
 
-if( file.exists( 'rds/marss_fit_Q_covar_multiplier_R_one_multiplier.rds' )){
-  marss_fit_Q_covar_multiplier_R_one_multiplier <- read_rds( 'rds/marss_fit_Q_covar_multiplier_R_one_multiplier.rds' )
+if( file.exists( 'rds4/marss_fit_Q_covar_multiplier_R_one_multiplier.rds' )){
+  marss_fit_Q_covar_multiplier_R_one_multiplier <- read_rds( 'rds4/marss_fit_Q_covar_multiplier_R_one_multiplier.rds' )
 } else {
   # State variance matrix is based on the gam18_measPair$Vp
   Q <- matrix(list('0.1166336*q',0,0,0,0,                 # 'covar_multiplier'
@@ -1578,7 +1578,7 @@ if( file.exists( 'rds/marss_fit_Q_covar_multiplier_R_one_multiplier.rds' )){
 ```
 
 
-```{r marss_fit_Q_covar_multiplier_R_mean_qualifier}
+```{r marss_fit_Q_covar_multiplier_R_mean_qualifier, eval = FALSE}
 
 # 7
 
@@ -1618,8 +1618,8 @@ if( file.exists( 'rds/marss_fit_Q_covar_multiplier_R_mean_qualifier.rds' )){
 
 # 8
 
-if ( file.exists( 'rds/marss_fit_Q_ones_multiplier_R_series_qualifier.rds' )){
-  marss_fit_Q_ones_multiplier_R_series_qualifier <- read_rds( 'rds/marss_fit_Q_ones_multiplier_R_series_qualifier.rds' )
+if ( file.exists( 'rds4/marss_fit_Q_ones_multiplier_R_series_qualifier.rds' )){
+  marss_fit_Q_ones_multiplier_R_series_qualifier <- read_rds( 'rds4/marss_fit_Q_ones_multiplier_R_series_qualifier.rds' )
 } else {
   Q = 'diagonal and equal'                                                      # 'ones_multiplier'
   
@@ -1632,12 +1632,12 @@ if ( file.exists( 'rds/marss_fit_Q_ones_multiplier_R_series_qualifier.rds' )){
   # Specify model
   model.gen=list(Z=Zt,A=A,R=R,U=U,Q=Q,x0=X0,V0=V0,tinitx=0)
   
-  # Refit model: trace = 1 provides parameter etimates with each iteration with the corresponding log-likelihood
+  # Refit model: trace = 1 provides parameter estimates with each iteration with the corresponding log-likelihood
   marss_fit_Q_ones_multiplier_R_series_qualifier  <- MARSS(Yt, model = model.gen, method = 'kem',
-                                         control = list(maxit =  1000, trace = 1, conv.test.slope.tol = 0.05),
+                                         control = list(maxit =  1000, trace = 0, conv.test.slope.tol = 0.05),
                                          inits = coef(marss_fit_Q_ones_multiplier_R_series_qualifier))
   
-  write_rds(marss_fit_Q_ones_multiplier_R_series_qualifier, path = 'marss_fit_Q_ones_multiplier_R_series_qualifier.rds')
+  write_rds(marss_fit_Q_ones_multiplier_R_series_qualifier, path = 'rds4/marss_fit_Q_ones_multiplier_R_series_qualifier.rds')
 }
 
 
@@ -1651,15 +1651,14 @@ if ( file.exists( 'rds/marss_fit_Q_ones_multiplier_R_series_qualifier.rds' )){
 # Standardize the diagonal of gam18_rating for estimation
 # gam18_diag_std <- diag(gam18_rating$Vp)/mean(diag(gam18_rating$Vp))
 
-if( file.exists( 'rds/marss_fit_Q_covar_multiplier_R_series_qualifier.rds' )){
-  marss_fit_Q_covar_multiplier_R_series_qualifier <- read_rds( 'rds/marss_fit_Q_covar_multiplier_R_series_qualifier.rds' )
+if( file.exists( 'rds4/marss_fit_Q_covar_multiplier_R_series_qualifier.rds' )){
+  marss_fit_Q_covar_multiplier_R_series_qualifier <- read_rds( 'rds4/marss_fit_Q_covar_multiplier_R_series_qualifier.rds' )
 } else {
   # State variance matrix is based on the gam18_measPair$Vp
-  Q <- matrix(list('0.1166336*q',0,0,0,0,                                  # 'covar_multiplier'
-                   0,'1.3179593*q',0,0,0  ,
-                   0,0,'0.6810473*q',0,0,
-                   0,0,0,'1.0737010*q',0,
-                   0,0,0,0,'1.8106588*q'), 5, 5)
+  Q <- matrix(list('0.1399517*q',0,0,0,                                  # 'covar_multiplier'
+                   0,'1.2915536*q',0,0,
+                   0,0,'0.8052943*q',0,
+                   0,0,0,'1.7632003*q'), 4, 4)
   
   # Initialize measurement error vector with large variance for all days
   R  <- array(0, dim = c(1, 1, nrow(df_stage_flow_allDays)))               # 'series_qualifier'
@@ -1673,9 +1672,9 @@ if( file.exists( 'rds/marss_fit_Q_covar_multiplier_R_series_qualifier.rds' )){
   # Refit model: trace = 1 provides parameter etimates with each iteration with the corresponding log-likelihood
   marss_fit_Q_covar_multiplier_R_series_qualifier  <- MARSS(Yt, model = model.gen, control = list(maxit =  4000, 
                                                             conv.test.slope.tol = 0.05), method = 'kem',
-                      inits = coef(marss_fit_Q_covar_multiplier_R_series_qualifier))
+                                               inits = coef(marss_fit_Q_covar_multiplier_R_series_qualifier))
   
-  write_rds(marss_fit_Q_covar_multiplier_R_series_qualifier, path = 'marss_fit_Q_covar_multiplier_R_series_qualifier.rds')
+  write_rds(marss_fit_Q_covar_multiplier_R_series_qualifier, path = 'rds4/marss_fit_Q_covar_multiplier_R_series_qualifier.rds')
 }
 
 ```
@@ -1684,8 +1683,8 @@ if( file.exists( 'rds/marss_fit_Q_covar_multiplier_R_series_qualifier.rds' )){
 
 # 10
 
-if ( file.exists( 'rds/marss_fit_Q_diag_unequal_R_series_specified_var.rds' )){
-  marss_fit_Q_diag_unequal_R_series_specified_var <- read_rds( 'rds/marss_fit_Q_diag_unequal_R_series_specified_var.rds' )
+if ( file.exists( 'rds4/marss_fit_Q_diag_unequal_R_series_specified_var.rds' )){
+  marss_fit_Q_diag_unequal_R_series_specified_var <- read_rds( 'rds4/marss_fit_Q_diag_unequal_R_series_specified_var.rds' )
 } else {
   Q = 'diagonal and unequal'  
   
@@ -1698,12 +1697,12 @@ if ( file.exists( 'rds/marss_fit_Q_diag_unequal_R_series_specified_var.rds' )){
   # Specify model
   model.gen=list(Z=Zt,A=A,R=R,U=U,Q=Q,x0=X0,V0=V0,tinitx=0)
   
-  # Refit model: trace = 1 provides parameter etimates with each iteration with the corresponding log-likelihood
+  # Refit model: trace = 1 provides parameter estimates with each iteration with the corresponding log-likelihood
   marss_fit_Q_diag_unequal_R_series_specified_var  <- MARSS(Yt, model = model.gen, method = 'kem',
-                            control = list(maxit =  2000, trace = 0, conv.test.slope.tol = 0.05),
-                            inits = marss_fit_Q_diag_unequal_R_series_specified_var)
+                            control = list(maxit =  500, trace = 1, conv.test.slope.tol = 0.05),
+                            inits = marss_fit_Q_diag_unequal_R_series_specified_var )
   
-  write_rds(marss_fit_Q_diag_unequal_R_series_specified_var, path = 'marss_fit_Q_diag_unequal_R_series_specified_var.rds')
+  write_rds(marss_fit_Q_diag_unequal_R_series_specified_var, path = 'rds4/marss_fit_Q_diag_unequal_R_series_specified_var.rds')
 }
 ```
 
