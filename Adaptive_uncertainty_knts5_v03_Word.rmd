@@ -853,21 +853,6 @@ rating_flex <- set_caption(rating_flex, caption =
 
 rating_flex
 
-# rating_tab %>% 
-#   dplyr::filter( !is.na( rating_no )) %>% 
-#   kable( caption = paste0('Table ', tab_no, '. Number of discrete flow measurements during selected rating periods at streamgage 04122500 Pere Marquette River at Scottville, Mich. during the period of analysis '),
-#          col.names = c('Rating number', 'Starting date', 'Ending date', 'Number of \n discrete \n measurements')) %>% 
-#   kable_styling( full_width = F, position = 'left') %>% 
-#   column_spec(1, width = '6em' ) %>% 
-#   column_spec(2, width = '6em' ) %>% 
-#   column_spec(3, width = '6em' ) %>% 
-#   column_spec(4, width = '3em' ) %>% 
-#   add_header_above( c('Rating Period' = 3, ' ') ) 
-#   # footnote('Discrete measurements that were obtained during the rating period were included in the number of count of discrete measurements for that rating. Discrete measurement 479 and 480, which occurred on Sept. 13, 1986, and Sept. 17, 1986, were included in rating period 18 because they were associated with the maximum stage measured at the streamgage.')
-
-
-
-
 ```
 
 ***
@@ -956,11 +941,12 @@ A state-space model consists of two equations: a state equation [1], and a measu
 
 $$
 \begin{align}
-\text{ State Equation:  } \vec{x}_{k}  &= \: B\ \vec{x}_{k-1} +  \vec{w}_{k-1} && \text{where } \vec{w}_{k-1} \sim MVN(0, Q_d) \text{,}\tag{1}\\  
- \text{Measurement Equation:  } y_{k} &=     \vec{z}_{k}{'} \text{ } \vec{x}_{k} + v_k && \text{where } v_k \sim N(0, R_{k}) \text{,} \tag{2}\\
+\text{ State Equation:  } \vec{x}_{k}  &= \: B\ \vec{x}_{k-1} +  \vec{w}_{k-1} && \text{where } \vec{w}_{k-1} \sim MVN(0, Q_d) \text{,}\\  
+ \text{Measurement Equation:  } y_{k} &=     \vec{z}_{k}{'} \text{ } \vec{x}_{k} + v_k && \text{where } v_k \sim N(0, R_{k}) \text{,}\\
  \text{}
 \end{align}
 $$
+
 
 ### State Equation  
 
@@ -976,7 +962,7 @@ In this analysis, the state vector contains the five time-varying parameters in 
 
 $$
 \begin{align}
-\ Q_c &\approx \frac{Q_d}{\Delta{k}} \text{,}\tag{3}\\
+\ Q_c &\approx \frac{Q_d}{\Delta{k}} \text{,}\\
 \text{where } Q_c  &= \text{ is the continuous-time process covariance,} \\
 Q_d &= \text{ is the discrete-time process covariance associated with parameter estimation,}  \\
 \ \Delta{k} &= \text{the length of the discrete time step.}\\ 
@@ -987,9 +973,9 @@ In this analysis, parameters for the daily process covariance matrix $Q_d \equiv
 
 $$
 \begin{align}
-Q_{day} &\equiv Q_d  \text{,} \tag{4}\\
-Q_{hour} &\approx \frac{Q_{day}}{24} \text{,} \tag{5}\\
-Q_{15-min} &\approx \frac{Q_{hour}}{4} \text{,} \tag{6} \\
+Q_{day} &\equiv Q_d  \text{,}\\
+Q_{hour} &\approx \frac{Q_{day}}{24} \text{,}\\
+Q_{15-min} &\approx \frac{Q_{hour}}{4} \text{,}\\
 \text{where } \ Q_{day}  &\text{ is the discrete-time process covariance derived during estimation of Q and R,} \\
 Q_{hour} \; &\text{ is the discrete-time process covariance applicable to computing hourly streamflow, } \\
 Q_{15-min} &\text{ is the discrete-time process covariance applicable to computing 15-minute streamflow. } \\
@@ -1204,12 +1190,12 @@ gam_stats <- data.frame('Rating'          = c('18', '19', '20', '21', '18', '19'
                                                         gam20_rating$coefficients[2], gam21_rating$coefficients[2],
                                                         gam18_measPair$coefficients[2], gam19_measPair$coefficients[2],
                                                         gam20_measPair$coefficients[2], gam21_measPair$coefficients[2],
-                                                        gamPOA_measPair$coefficients[2]), digits = 4),
+                                                        gamPOA_measPair$coefficients[2]), digits = 2),
                            'beta2'      = format(c(gam18_rating$coefficients[3], gam19_rating$coefficients[3],
                                                         gam20_rating$coefficients[3], gam21_rating$coefficients[3],
                                                         gam18_measPair$coefficients[3], gam19_measPair$coefficients[3],
                                                         gam20_measPair$coefficients[3], gam21_measPair$coefficients[3],
-                                                        gamPOA_measPair$coefficients[3]), digits = 4),
+                                                        gamPOA_measPair$coefficients[3]), digits = 3),
                            'beta3'      = format(c(gam18_rating$coefficients[4], gam19_rating$coefficients[4],
                                                         gam20_rating$coefficients[4], gam21_rating$coefficients[4],
                                                         gam18_measPair$coefficients[4], gam19_measPair$coefficients[4],
@@ -1228,17 +1214,55 @@ gam_stats <- data.frame('Rating'          = c('18', '19', '20', '21', '18', '19'
 # Increment tab_no
 tab_no <- tab_no + 1
 
-gam_stats %>% 
-  kable( caption = paste('Table', tab_no, '. Summary statistics of five-knot CRSs from Generalized Additive Models for selected rating periods 18 - 20 and the Period of Analysis (POA).' ), 
-  col.names = c('Rating period', 'Number of data points', 'Residual degrees of freedom', "beta_0",
-                "beta_1", 'beta_2', 'beta_3', "beta_4", 'R^2')) %>% 
-  kable_styling() %>% 
-  add_header_above( c(' ' = 3, 'Estimated Parameters' = 5, ' ' = 1 ) ) %>% 
-  pack_rows('Based on stage-flow rating table', 1, 4) %>% 
-  pack_rows('Based on discrete stage-flow measurement', 5, 9) %>% 
-  column_spec(1, width = "5em") %>% 
-  column_spec(2, width = "5em") %>% 
-  column_spec(3, width = "8em")
+
+gam_flex <- flextable( gam_stats )
+gam_flex <- theme_alafoli(gam_flex)
+
+gam_flex <- set_header_labels(gam_flex, Rating = "Rating number", 
+                              N = "Number of measure- ments",
+                              Residual.df = "Residual degrees of freedom",
+                              Intercept   = 'B0',
+                              beta1       = 'B1',
+                              beta2       = 'B2',
+                              beta3       = 'B3',
+                              beta4       = 'B4',
+                              R2.adj      = 'Adjusted R-squared')
+
+gam_flex <- add_header_row(gam_flex, 
+                           values  = c('','Estimated Spline Parameters',''), 
+                                 colwidths = c(3,5,1), top = TRUE) 
+
+gam_flex <- fontsize(gam_flex, size = 10, part = 'header')
+
+gam_flex <- align(gam_flex, align = 'center', part = 'header')
+
+gam_flex <- hline(gam_flex, i = 1, j = c(4,5,6,7,8), 
+                        border = fp_border(), part = 'header')
+
+gam_flex <- hline_top(gam_flex, 
+                      border = fp_border(), part = 'header')
+
+gam_flex <- hline_bottom(gam_flex, 
+                      border = fp_border(), part = 'body')
+
+gam_flex
+
+
+
+
+
+
+# gam_stats %>% 
+#   kable( caption = paste('Table', tab_no, '. Summary statistics of five-knot CRSs from Generalized Additive Models for selected rating periods 18 - 20 and the Period of Analysis (POA).' ), 
+#   col.names = c('Rating period', 'Number of data points', 'Residual degrees of freedom', "beta_0",
+#                 "beta_1", 'beta_2', 'beta_3', "beta_4", 'R^2')) %>% 
+#   kable_styling() %>% 
+#   add_header_above( c(' ' = 3, 'Estimated Parameters' = 5, ' ' = 1 ) ) %>% 
+#   pack_rows('Based on stage-flow rating table', 1, 4) %>% 
+#   pack_rows('Based on discrete stage-flow measurement', 5, 9) %>% 
+#   column_spec(1, width = "5em") %>% 
+#   column_spec(2, width = "5em") %>% 
+#   column_spec(3, width = "8em")
 
 
 ```
