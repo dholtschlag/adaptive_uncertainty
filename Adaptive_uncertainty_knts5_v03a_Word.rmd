@@ -6,18 +6,18 @@ author:
 - "U.S. Geological Survey"
 date: "`r format(Sys.Date(), '%A %b. %d, %Y') `"
 output:
-  word_document:
-    toc: yes
-    fig_caption: yes
-    reference_docx: msWord_MLAstyle.docx
-  pdf_document:
-    toc: yes
   html_document:
     toc: yes
     toc_float: no
     toc_collapsed: no
     figurelist: yes
     tablelist: yes
+  pdf_document:
+    toc: yes
+  word_document:
+    toc: yes
+    fig_caption: yes
+    reference_docx: msWord_MLAstyle.docx
 toc_depth: 4
 number_sections: yes
 theme: lumen
@@ -44,22 +44,27 @@ normal: $ x^2 + 2xy + y^2$}
 
 \newpage  
 
+Adapting Rating Curves to Long-Term Changes in Stage-Flow Relations and Characterizing Uncertainties of Streamflow Records with State-Space Modeling and Kalman Filtering   
+
+David J. Holtschlag   
+
 # Abstract
 
-An adaptive stage-flow estimation approach was developed to track persistent changes in the relation between stage (water-surface elevation) and flow (streamflow discharge) at a streamgage, and to compute the uncertainty of unit streamflow data. The approach begins by estimating a cubic regression spline for a stage-flow relation within a generalized additive modeling framework. An initial cubic regression spline was estimated from data in an existing stage-flow rating, and from discrete measurements of stage and flow measured during a specified time period. The estimated cubic regression spline parameters were multiplied by a corresponding set of basis values, derived from stage values, to compute flow. Changes is the cubic regression spline parameters, reflecting changes in the stage-flow relation, were tracked within a state-space model by use of quasiperiodic discrete flow measurements. In addition, the state-space model can be used with Kalman filtering or smoothing and new unit stage values to compute the magnitude and uncertainty of the unit streamflow record. The approach is demonstrated with data from the U.S. Geological Survey streamgage 04122500 Pere Marquette River at Scottville, Michigan.  Extension of this approach to track intermittent changes, associated with variable ice-backwater for example, would require a multivariate analysis involving a streamflow network that is beyond the scope of this report.  
+An adaptive estimation approach was developed to track persistent changes in the relation between stage and flow at streamgages, and to compute the uncertainty of resulting unit streamflow records. A five-knot cubic regression spline was used to approximate the stage-flow relation, in which the natural logarithms of flow were described by a Gamma distribution. Initial ($k=0$) spline parameters were estimated within a generalized additive modeling framework using both stage-flow rating-table data and discrete stage and flow measurement data. A state-space model was developed at a daily time step to track the changes in the spline parameters over a 30-year period with each discrete-flow measurement. In the state equation, the state-vector at time $k$, $\vec{x}_k$ contained the five spline parameters, which varied as a random walk with multivariate normal disturbances having a mean vector of zero and a process covariance matrix $Q$. In the measurement equation, the time series $y_k$ contained quasiperiodic flow measurements on days of discrete measurements, and contained missing values indicators, otherwise. Elements of $y_k$ were estimated as the matrix product of spline basis vectors, computed on the basis of daily mean stage, and the estimated state vector. The flow measurement variances was represented by the time series $R_k$. Various forms of the process and measurement variances were estimated within the development of alternative state-space models. A state-space model was selected based on the minimum Akaike information criterion.  Kalman filtering and smoothing were used to compute real-time and offline estimates of daily flow based on the selected state-space equation. The approach is demonstrated with data from the U.S. Geological Survey streamgage 04122500 Pere Marquette River at Scottville, Michigan, using data from water year 1990 to 2019. 
+
 
 \newpage  
 # Background
 
-The U.S. Geological Survey (USGS) computes records of streamflow at about 8,500 active streamgages throughout the United States. Streamgages measure outflow from a basin, which is generally topographically defined by a watershed.  Computations are commonly based on continual measurements of stage at 10- to 60-minute (unit) intervals. The stage data is used to compute corresponding values of flow based on a empirical relation between stage and flow commonly referred to as a rating curve or table. Ratings describe a monotonically increasing relation between stage and flow. A rating is developed and maintained on the basis of discrete, contemporaneous measurements of stage and flow that span the range of stage conditions at the streamgage. Discrete measurements require a field visit to the streamgage, which can be an important component in the cost of streamgage operation.  
+The U.S. Geological Survey (USGS) computes records of streamflow at about 8,500 active streamgages throughout the United States. Streamgages measure outflow from a drainage basin, which is topographically defined by a watershed.  Computations are commonly based on continual measurements of stage at 10- to 60-minute (unit) intervals. The stage data is used to compute corresponding values of flow based on a empirical relation between stage and flow, which is commonly referred to as a rating curve or table. Ratings describe a monotonically increasing relation between stage and flow. A rating is developed and maintained on the basis of discrete, contemporaneous measurements of stage and flow that generally span the range of stage conditions at the streamgage. Discrete measurements require a field visit to the streamgage, which can be a major component of the cost of streamgage operations.  
 
-The stage-flow relation can change gradually over time due to persistent changes in the channel or overbank geometry and hydraulic characteristics. Alternatively, this relation can change abruptly owing to intermittent effects, such as increased backwater associated with aquatic plant growth or ice formation. Once the cause of the intermittent changes are no longer present, the stage-flow relation may revert to nominal conditions, consistent with possible persistent changes in the stage-flow relation at the streamgage.  Commonly both persistent and intermittent changes occur in the stage-flow rating.  The distinction between persistent and intermittent changes is somewhat arbitrary, but practically determined by the frequency of discrete measurements. Abrupt intermittent changes, such as ice backwater effects, can occur on a time scale of hours to days during periods when no discrete flow measurements occur to identify the onset, cessation, or magnitude of backwater associated with these events.  
+The stage-flow relation can change gradually over time due to persistent changes in a stream section, channel or overbank geometry or roughness characteristics. Alternatively, this relation can change abruptly owing to intermittent effects, such as increased backwater associated with aquatic plant growth or ice formation. Once the cause of the intermittent changes are no longer present, the stage-flow relation may revert to baseline conditions, consistent with possible persistent changes in the stage-flow relation at the streamgage.  Commonly both persistent and intermittent changes occur in the stage-flow rating.  The distinction between persistent and intermittent changes is somewhat arbitrary, but practically determined by the frequency of discrete measurements. Abrupt intermittent changes, such as ice backwater effects, can occur on a time scale of hours to days. Accounting for the starting and ending period of temporary changes or shifts in stage-flow relation is sometimes problematic during prolonged periods between discrete flow measurements.  
 
 ## Purpose and Scope
 
-The purpose of this paper is to develop and demonstrate an approach for automatically adapting streamflow rating curves for persistent changes in stage-flow relations based on discrete stage-flow measurements. The approach also enables the estimation of the magnitudes and uncertainties of unit streamflow records. A persistent change refers to a gradual change in rating conditions where the frequency of discrete measurements are adequate to approximate changes, but perhaps inadequate to identify the initiation and cessation of the changes in rating conditions. The adaptive approach can be applied in real-time by considering only past or current discrete measurements, or offline, considering discrete flow measurements before and after the time of estimation. The offline approach may provide increased accuracy of streamflow data in comparison to the real-time estimate. An implementation strategy and example application are provided, while recognizing that refinements and adaptations will likely be needed for site-specific applications.  
+The purpose of this paper is to develop and demonstrate an approach for automatically adapting streamflow ratings for persistent or intermittent changes in stage-flow relations based on discrete stage-flow measurements. The approach also enables the estimation of the magnitudes and uncertainties of unit streamflow records. A persistent change refers to a gradual change in rating conditions where the frequency of discrete measurements are adequate to approximate changes, but perhaps inadequate to identify the initiation and cessation of the changes in rating conditions. The adaptive approach can be applied in real-time by considering only past or current discrete measurements, or offline, considering discrete flow measurements before, during, and after the time of estimation. The offline approach may provide increased accuracy of streamflow data in comparison to the real-time estimate. An implementation strategy and example application are provided, while recognizing that refinements and adaptations will likely be needed for each site-specific applications.  
 
-In contrast to persistent changes, intermittent changes represent sudden changes in rating conditions that may be associated with transient effects like those changes in rating conditions associated with backwater due to ice formation in the channel. Tracking intermittent changes requires more precise information on the timing of the onset and cessation of the intermittent effects than is generally possible with discrete flow measurements.  Intermittent changes may benefit from analysis of multiple streamgages in a network, but is beyond the scope of this study. 
+In contrast to persistent changes, intermittent changes represent sudden changes in rating conditions that may be associated with transient effects like those changes in rating conditions associated with backwater due to ice formation in the channel. Tracking intermittent changes requires more precise information on the timing of the onset and cessation of the intermittent effects than is generally possible using discrete flow measurements alone.  Intermittent changes may benefit from analysis of multiple streamgages in a network, but such an analysis is beyond the scope of this paper. 
 
 
 ```{r setup, include=FALSE}
@@ -99,6 +104,8 @@ suppressPackageStartupMessages(library(usmap))
 suppressPackageStartupMessages(library(FAdist))
 suppressPackageStartupMessages(library(flextable))
 suppressPackageStartupMessages(library(officer))
+suppressPackageStartupMessages(library(tinytex))
+# tinytex::install_tinytex()
 knitr::opts_chunk$set(echo = FALSE, fig.width = 8, eval = TRUE)
 ```
 
@@ -243,7 +250,7 @@ Historically, unit stage and flow values have been considered ancillary data of 
 
 ## Daily Streamflow
 
-Daily mean streamflow data for the Pere Marquette River were obtained for the period of record using the USGS National Water Information System (NWIS) accessed by use of the R [@Rcore2019] package 'dataRetrieval' [@DeCicco2019]. Some of the earlier ancillary data used in computing daily mean flows, however, is not electronically available. In particular, unit stage data and discrete flow measurement data are generally available for Pere Marquette River in electronic format since `r format(date_beg_POA, '%b %d, %Y')`. The most recent data used in the analysis was `r format(date_end_POA, '%b %d, %Y')`. In this report, this period is referred to as the period of analysis (POA). Data summaries presented in the following sections are generally restricted to this period.
+Daily mean streamflow data for the Pere Marquette River were obtained for the period of record using the USGS National Water Information System (NWIS) accessed by use of the R [@Rcore2020] package 'dataRetrieval' [@DeCicco2019]. Some of the earlier ancillary data used in computing daily mean flows, however, is not electronically available. In particular, unit stage data and discrete flow measurement data are generally available for Pere Marquette River in electronic format since `r format(date_beg_POA, '%b %d, %Y')`. The most recent data used in the analysis was `r format(date_end_POA, '%b %d, %Y')`. In this report, this period is referred to as the period of analysis (POA). Data summaries presented in the following sections are generally restricted to this period.
 
 
 
@@ -300,9 +307,9 @@ flow_daily_pub_cd$wy_day <- as.integer( flow_daily_pub_cd$wy_day )
 
 ```
 
-***  
+  
 
-A probability density curve can be used to theoretically describe the empirical frequency characteristics of daily mean flows.  In this analysis, the distribution of the natural logarithms of daily flows at Pere Marquette River were closely approximated by the asymmetrical, three-parameter gamma distribution (fig. 2), which is right skewed. Flows ranged from `r flow_quant[[1]]` and `r flow_quant[[2]]` ft^3^/s, 95-percent of the time.  The minimum and maximum daily flows during this period were `r min(flow_daily_pub$Flow)` and `r max(flow_daily_pub$Flow)`, respectively. The mean flow was 787 ft^3^/s. Thus, a Gamma distribution of the natural logarithms of flows was specified when modeling flows.     
+A probability density curve can be used to theoretically describe the empirical frequency characteristics of daily mean flows.  In this analysis, the distribution of the natural logarithms of daily flows at 04122500 Pere Marquette River at Scottville, Michigan, were closely approximated by the asymmetrical, three-parameter gamma distribution (fig. 2), which is right skewed. Flows ranged from `r flow_quant[[1]]` and `r flow_quant[[2]]` ft^3^/s, 95-percent of the time.  The minimum and maximum daily flows during this period were `r min(flow_daily_pub$Flow)` and `r max(flow_daily_pub$Flow)`, respectively. The mean flow was 787 ft^3^/s. Thus, a Gamma distribution of the natural logarithms of flows was specified when modeling flows.     
 
 ```{r prob_den_flow, warning = FALSE, eval = TRUE }
 # Estimate parameters for lgamma3
@@ -342,7 +349,7 @@ flow_daily_pub %>%
 
 ```
 
-***
+
 
 ## Discrete Stage and Flow Measurement Data
 
@@ -454,7 +461,7 @@ discrete_meas %>%
 
 ```
 
-***  
+  
 
 ### Types of Flow Controls and Flow Accuracy Qualifiers  
 
@@ -545,11 +552,10 @@ df <- data.frame( Date = discrete_meas$Date[1:(nrow(discrete_meas)-2)],
 
 ```
 
-***
 
 ### Time Between Discrete Flow Measurements  
 
-The frequency of discrete flow measurements is an important factor in detecting persistent changes in stage-flow ratings, and in determining the costs of field operations. Figure `r fig_no + 1` shows the irregular time series of flow measurements and a histogram of time between measurements on the right. Time between discrete measurements was computed to the nearest day. Based on the selected discrete measurements at Pere Marquette River, the mode of the distribution of time between discrete measurements was 43, and the mean was `r format( mean(df$days_between_measurements), digits = 3)`. There is some evidence from the plot that the time between discrete measurements increased after 1993. There are no extended gaps in discrete flow measurements.  The two measurements at zero time between measurements are from check measurements made to ensure the initially measured flow. A "check" measurement is a second flow measurements on the same day and flow conditions to confirm the accuracy of the initially measured flow. Two check measurements were made on the Pere Marquette River during the period of analysis. An average flow was computed from the two measurements on the same day to represent the discrete flow measurement for that day.
+The frequency of discrete flow measurements is an important factor in detecting persistent changes in stage-flow ratings, and in determining the costs of field operations. Figure `r fig_no + 1` shows the irregular time series of flow measurements and a histogram of time between measurements on the right. Time between discrete measurements was computed to the nearest day. Based on the selected discrete measurements at Pere Marquette River, the mode of the distribution of time between discrete measurements was 42, indicating that discrete flow measurements are most frequently 6 weeks apart. The mean time between discrete measurements was `r format( mean(df$days_between_measurements), digits = 3)`. There is some evidence from the plot that the time between discrete measurements increased after 1993. There are no extended gaps in discrete flow measurements.  The two measurements at zero time between measurements are from check measurements made to ensure the initially measured flow. A "check" measurement is a second flow measurements on the same day and flow conditions to confirm the accuracy of the initially measured flow. Two check measurements were made on the Pere Marquette River during the period of analysis. An average flow was computed from the two measurements on the same day to represent the discrete flow measurement for that day.
 
 ```{r days_between_meas, messages = FALSE, warning = FALSE } 
 
@@ -578,7 +584,7 @@ p <- df %>%
 
 ```
 
-***
+
 
 ## Continuous Stage Data  
 
@@ -774,7 +780,7 @@ df_stage_flow_allDays[, ] %>%
 ```
 
 
-***
+
 
 ### Stage Values Used in Modeling
 
@@ -866,7 +872,7 @@ rating_flex
 
 ```
 
-***
+
 
 Figure `r fig_no + 1` shows historical rating curves 18-21 and corresponding discrete flow measurements during the selected rating periods.  A persistent shift to the right is evident in the plot indicating higher rates of flow are discharged at the same stage as time increases. The historical rating curves that were developed manually track these changes closely. Ratings 18 and 21 are generally parallel and provide the left and right boundaries for rated flows during the selected period of analysis, while ratings 18 and 19 are more irregular. Specifically, ratings 19 and 20 are well separated at flows less than 2,800 ft^3^/s, but converge at greater flows. The two essentially identical ratings then and converge with rating 18 at the 6,500 ft^3^/s and 8.1 ft of stage.  Ratings 20 and 21 are nearly overlapping at flows less than 2,000 ft^3^/s. Rating 21 shows a sharp decrease in slope at about 1,700 ft^3^/s, and crosses rating 20. Rating 21 continues to 7,300 ft^3^/s at 8.1 ft of stage, perhaps to account for the highest measured flow of about 4,850 ft^3^/s during the period of analysis. At 8.1 ft of stage, rating 18, 19, and 20 indicate a flow of 6,500 ft^3^/s, while rating 21 indicates a flow of 7,300 ft^3^/s, or about 12.3 percent more flow than ratings 18-20. 
 
@@ -1364,7 +1370,7 @@ gam_long$flow_type[ndx_gam] <- 'gam_flow'
 
 ```
 
-***
+
 
 ### Basis Values for Cubic Regression Splines
 
