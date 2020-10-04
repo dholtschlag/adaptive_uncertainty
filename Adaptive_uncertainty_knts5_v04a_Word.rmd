@@ -177,6 +177,20 @@ Persistent changes in stage-flow relation at 04122500 Pere Marquette River at Sc
 
 ```{r register_key, echo = FALSE,  results = 'hide', message = 'hide', warning = 'hide', eval = TRUE }
 
+# Watershed 
+invisible(watershed    <- st_read("C:/Home/USGS/adaptive_uncertainty/maps/04122500.shp"))
+watershed_df <- data.frame( lon = st_coordinates(watershed)[,1],
+                            lat = st_coordinates(watershed)[,2])
+
+bbox <- make_bbox(lon =  st_coordinates(watershed)[,1], lat =  st_coordinates(watershed)[,2] )
+
+lon_mean <- mean(st_coordinates(watershed)[,1])
+lat_mean <- mean(st_coordinates(watershed)[,2])
+
+river    <- st_read("C:/Home/USGS/adaptive_uncertainty/maps/pere_marquette_river.shp")
+river_df <- data.frame(lon =  st_coordinates(river)[,1], 
+                       lat =  st_coordinates(river)[,2] )
+
 # this sets your google map for this session
 # Read google key from file
 ## google_key <- read_file('maps/google_key.txt')
@@ -189,38 +203,47 @@ Persistent changes in stage-flow relation at 04122500 Pere Marquette River at Sc
 ## has_google_key()
 
 # Set up bounding box for map
-## site_map <- get_map( location = c(lon = site_info$dec_long_va + 0.10, lat = site_info$dec_lat_va), zoom = 9, source = 'google', maptype = "terrain")
+site_map_bw <- site_map <- get_map( location = c(lon = lon_mean, lat = lat_mean), zoom = 9, source = 'google', maptype = "terrain")
 # 
+site_map_bw <- get_googlemap( center = c(lon = lon_mean, lat = lat_mean), zoom = 9, source = 'google', maptype = "terrain", size = c(320,320))
+
+site_map_bw2 <- get_googlemap( center = c(lon = lon_mean, lat = lat_mean), zoom = 9, source = 'google', maptype = "terrain", size = c(320,320), scale = 2)
+
+site_map_bw2h <- get_googlemap( center = c(lon = lon_mean, lat = lat_mean), zoom = 9, source = 'google', maptype = "hybrid", size = c(320,320), scale = 2)
+
 # write_rds(site_map, path = "C:/Home/projects/spline_rating_curves/stage_discharge_rating/maps/site_map")
 # write_rds(site_map, path = "C:/Home/USGS/adaptive_uncertainty/maps/site_map")
 
 # suppressMessages(map <- read_rds(path = "C:/Home/projects/spline_rating_curves/stage_discharge_rating/maps/site_map"))
 suppressMessages(map <- read_rds(path = "C:/Home/USGS/adaptive_uncertainty/maps/site_map"))
 
-# invisible(watershed    <- st_read("D:/ws_012/fhwa_flood_regions/gis/shapefiles/04122500.shp"))
+# Watershed 
 invisible(watershed    <- st_read("C:/Home/USGS/adaptive_uncertainty/maps/04122500.shp"))
 watershed_df <- data.frame( lon = st_coordinates(watershed)[,1],
                            lat = st_coordinates(watershed)[,2]) 
 ```
 
 
-```{r plot_site_map, fig.height = 7, fig.width = 7, message = FALSE, warning = 'hide', eval = TRUE }
+```{r plot_site_map, fig.height = 7, fig.width = 9, message = FALSE, warning = 'hide', eval = TRUE }
 # write_rds(site_map, path = "C:/Home/projects/spline_rating_curves/stage_discharge_rating/maps/site_map")
 
 fig_no <- fig_no + 1
 
 # Site map with streamgage and drainage basin shown
-vicinity <- map %>% 
+vicinity <- site_map_bw2 %>% 
   ggmap() +
+  geom_polygon( data = watershed_df, aes( x = lon, y = lat), color = 'brown1', size = 1,
+                fill = 'tan', alpha = 0.05 ) +
   geom_point( data = data.frame( lon = site_info$dec_long_va, lat = site_info$dec_lat_va),
-              aes( x = lon, y = lat), color = 'red', size = 3) +
-  geom_polygon( data = watershed_df, aes( x = lon, y = lat), color = 'lightgrey', alpha = 0.15 ) +
+              aes( x = lon, y = lat), fill = 'red', size = 4, shape = 24) +
+  geom_point( data = river_df, aes( x = lon, y = lat), color = 'blue', size = 0.5) +
   xlab( 'Longitude' ) + 
   ylab( 'Latitude') +
-  scalebar(x.min = -86.95622, x.max = -85.29841, y.min =  43.40782, y.max =  44.5, 
+  scalebar(x.min = -86.95622 - 0.05, x.max = -85.29841 - 0.05, 
+           y.min =  43.40782 + 0.25, y.max =  44.5     + 0.25, 
            transform = TRUE, dist_unit = 'mi', dist = 10, location = 'bottomleft',
            model = "GRS80", height = 0.02, st.size = 3, st.dist = .015,
-           border.size = 1, box.fill = c('black', 'white')) +
+           border.size = 1, box.fill = c('grey', 'white')) +
   annotate('text', x = -85.88, y = 43.85, label = 'Pere Marquette Basin' ) +
   annotate('text', x = -86.28, y = 43.99, label = '04122500') +
   ggtitle( paste0('Figure ', fig_no, '. U.S. Geological Survey streamgage 04122500 Pere Marquette \nRiver at Scottville, Mich. and drainage basin'))
@@ -231,15 +254,18 @@ mi_map <- map_data('state')
 mi_inset <-mi_map %>% 
   dplyr::filter( region == 'michigan') %>% 
   ggplot( aes( x = long, y = lat, group = group)) +
-  geom_polygon( fill = 'black') +
+  geom_polygon( fill = 'tan', color = 'black') +
   geom_point( data = data.frame( long = site_info$dec_long_va, lat = site_info$dec_lat_va),
-              aes( x = long, y = lat, group = NA), color = 'red', size = 2) + 
-  xlab('Longitude') +
-  ylab('Latitude')
+              aes( x = long, y = lat, group = NA), color = 'red', size = 1.5, shape = 24) + 
+  xlab('') +
+  ylab('') +
+  theme( plot.background  = element_rect( fill = NA, color = NA),
+         panel.background = element_rect( fill = NA),
+         panel.grid       = element_line( color = 'grey'))
 
-
-vicinity + inset(grob = ggplotGrob(mi_inset), xmin = -86.85, xmax = -86.4, 
-                                                      ymin =  44.25, ymax =  44.55)
+vicinity
+vicinity + inset(grob = ggplotGrob(mi_inset), xmin = -87.05, xmax = -86.60, 
+                                                      ymin =  43.65, ymax =  43.95)
 ```
 
 \newpage
